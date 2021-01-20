@@ -23,11 +23,10 @@ from intelmq import CONFIG_DIR, PIPELINE_CONF_FILE, RUNTIME_CONF_FILE, DEFAULTS_
 
 __all__ = ['BotTestCase']
 
-BOT_CONFIG = utils.load_configuration(pkg_resources.resource_filename('intelmq',
-                                                                      'etc/defaults.conf'))
-BOT_CONFIG.update({"destination_pipeline_broker": "pythonlist",
+BOT_CONFIG = {"destination_pipeline_broker": "pythonlist",
                    "logging_handler": "stream",
                    "logging_path": None,
+                   "logging_level": "DEBUG",
                    "rate_limit": 0,
                    "retry_delay": 0,
                    "error_retry_delay": 0,
@@ -39,7 +38,7 @@ BOT_CONFIG.update({"destination_pipeline_broker": "pythonlist",
                    "redis_cache_password": os.environ.get('INTELMQ_TEST_REDIS_PASSWORD'),
                    "source_pipeline_broker": "pythonlist",
                    "testing": True,
-                   })
+                   }
 
 
 class Parameters(object):
@@ -229,7 +228,7 @@ class BotTestCase(object):
                 self.bot = self.bot_reference(self.bot_id)
         self.bot._Bot__stats_cache = None
 
-        self.pipe = pipeline.Pythonlist(parameters, logger=self.logger, bot=self.bot)
+        self.pipe = pipeline.Pythonlist(logger=self.logger, bot=self.bot)
         self.pipe.set_queues(parameters.source_queue, "source")
         self.pipe.set_queues(parameters.destination_queues, "destination")
 
