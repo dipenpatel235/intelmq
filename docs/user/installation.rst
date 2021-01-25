@@ -152,6 +152,8 @@ Navigate to your preferred installation directory, i. e. use ``mkdir ~/intelmq &
 
    sudo docker pull certat/intelmq-full:1.0
 
+   sudo docker pull certat/intelmq-nginx:latest
+
    cd intelmq-docker
 
    sudo docker-compose up
@@ -168,40 +170,40 @@ Navigate to your preferred installation directory, i. e. use ``mkdir ~/intelmq &
 You need to prepare some volumes & configs. Edit the left-side after -v, to change paths.
 
 Change ``redis_host`` to a running redis-instance. Docker will resolve it automatically.
+All containers are connected using `Docker Networks <https://docs.docker.com/engine/tutorials/networkingcontainers/>`_.
 
 In order to work with your current infrastructure, you need to specify some environment variables
 
 .. code-block:: bash
 
+   sudo docker pull redis:latest
+
    sudo docker pull certat/intelmq-full:1.0
+
+   sudo docker pull certat/intelmq-nginx:latest
+
+   sudo docker network create intelmq-internal
+
+   sudo docker run -v ~/intelmq/example_config/redis/redis.conf:/redis.conf \
+                   --network intelmq-internal \
+                   --name redis \
+                   redis:latest
+
+   sudo docker run -v ~/intelmq/intelmq-manager/html:/www \
+                   --network intelmq-internal \
+                   --name nginx \
+                   certat/intelmq-nginx:latest
 
    sudo docker run -e INTELMQ_IS_DOCKER="true" \
                    -e INTELMQ_PIPELINE_DRIVER="redis" \
                    -e INTELMQ_PIPELINE_HOST=redis_host \
                    -e INTELMQ_REDIS_CACHE_HOST=redis_host \
-                   -e INTELMQ_MANAGER_CONFIG="/opt/intelmq-manager/config/config.json" \
-                   -v ~/intelmq/config/etc:/opt/intelmq/etc \
-                   -v ~/intelmq/config/intelmq-manager:/opt/intelmq-manager/config \
+                   -v ~/intelmq/example_config/intelmq/etc/:/opt/intelmq/etc/ \
+                   -v ~/intelmq/example_config/intelmq-api:/opt/intelmq-api/config \
                    -v /var/log/intelmq:/opt/intelmq/var/log \
                    -v ~/intelmq/lib:/opt/intelmq/var/lib \
-                   certat/intelmq-full:1.0
-
-**ATTENTION** Using networks requires better understanding of how docker works. Not recommended for End-Users.
-Alternatively you can use `Docker Networks <https://docs.docker.com/engine/tutorials/networkingcontainers/>`_.
-
-.. code-block:: bash
-
-   sudo docker pull certat/intelmq-full:1.0
-
-   docker network create -d bridge intelmq_net
-
-   sudo docker run -e INTELMQ_IS_DOCKER="true" \
-                   -e INTELMQ_MANAGER_CONFIG="/opt/intelmq-manager/config/config.json" \
-                   --net intelmq_net \
-                   -v ~/intelmq/config/etc:/opt/intelmq/etc \
-                   -v ~/intelmq/config/intelmq-manager:/opt/intelmq-manager/config \
-                   -v /var/log/intelmq:/opt/intelmq/var/log \
-                   -v ~/intelmq/lib:/opt/intelmq/var/lib \
+                   --network intelmq-internal \
+                   --name intelmq \
                    certat/intelmq-full:1.0
 
 Additional Information
